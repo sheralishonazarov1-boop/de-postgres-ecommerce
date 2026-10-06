@@ -80,6 +80,34 @@ Order → Payment
 
 One order may have multiple payment records.
 
+### 4.1 Conceptual Model
+
+The system currently contains seven primary business entities:
+
+- Customer
+- Address
+- Product
+- Category
+- Order
+- OrderItem
+- Payment
+
+ProductCategory is an associative entity used to represent the many-to-many
+relationship between Product and Category.
+
+Current relationships:
+
+- Customer 1:N Address
+- Customer 1:N Order
+- Order 1:N OrderItem
+- Product 1:N OrderItem
+- Product N:M Category through ProductCategory
+- Order 1:N Payment
+
+Some relationship optionality rules remain subject to clarification during
+logical design because the current requirements do not explicitly define all
+minimum cardinalities.
+
 ---
 
 ## 5. Technology
