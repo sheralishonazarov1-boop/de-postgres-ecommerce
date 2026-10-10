@@ -102,19 +102,21 @@ create table payments (
 );
 
 
-SELECT
-    o.order_id,
-    c.first_name,
-    c.last_name,
-    p.name AS product,
-    oi.quantity,
-    oi.unit_price,
-    oi.quantity * oi.unit_price AS line_total
-FROM orders o
-JOIN customers c
-    ON c.customer_id = o.customer_id
-JOIN order_items oi
-    ON oi.order_id = o.order_id
-JOIN products p
-    ON p.product_id = oi.product_id
-ORDER BY o.order_id, oi.order_item_id;
+-- SELECT
+--     o.order_id,
+--     c.first_name,
+--     c.last_name,
+--     p.name AS product,
+--     oi.quantity,
+--     oi.unit_price,
+--     oi.quantity * oi.unit_price AS line_total
+-- FROM orders o
+-- JOIN customers c
+--     ON c.customer_id = o.customer_id
+-- JOIN order_items oi
+--     ON oi.order_id = o.order_id
+-- JOIN products p
+--     ON p.product_id = oi.product_id
+-- ORDER BY o.order_id, oi.order_item_id;
+
+
