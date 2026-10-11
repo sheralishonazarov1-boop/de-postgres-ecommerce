@@ -9,7 +9,7 @@
 * quearies but add extra work to inserts, updates and deletes.
 
 ## EXPLAIN VS ANALYZE EXPLAIN:
-* EXPLAIN shows the estimated exercution plan without running the query itself.
+* EXPLAIN shows the estimated execution plan without running the query itself.
 * ANALYZE EXPLAIN actually runs the query and reports its plan along with actual row counts and execution times.
 
 ## Why index isn't necessarily used:
