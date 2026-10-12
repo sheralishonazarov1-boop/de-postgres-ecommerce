@@ -1,36 +1,23 @@
-# Python
-__pycache__/
-*.py[cod]
-.venv/
-venv/
-env/
-
-# Environment variables / secrets
+# Environment and secrets
 .env
 .env.*
 !.env.example
 
-# IDEs
+# Python artifacts, if used for future tooling
+.venv/
+__pycache__/
+*.py[cod]
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Database backups and local data exports
+*.dump
+*.backup
+*.sql.gz
+
+# Editor and operating-system files
 .vscode/
 .idea/
-
-# OS files
 .DS_Store
-Thumb.db
-
-# Logs
-*.log
-
-# Local database / generated files
-*.db
-*.sqlite
-*.sqlite3
-
-# Test / coverage
-.pytest_cashe/
-.coverage
-htmlcov/
-
-# Temporary files
-*.tmp
-*.swm
