@@ -71,3 +71,5 @@ echo
 echo "SQL files completed without a reported psql error."
 echo "Validation database: $DB_NAME"
 echo "Database retained for manual inspection."
+
+./scripts/validate.sh ecommerce_release_check
