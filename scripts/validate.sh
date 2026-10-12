@@ -65,6 +65,8 @@ run_sql_file "sql/queries/004_ctes_subqueries_windows.sql"
 
 run_sql_file "sql/labs/002_indexes_and_explain.sql"
 
+run_sql_file "sql/tests/003_validation_assertions.sql"
+
 echo
 echo "SQL files completed without a reported psql error."
 echo "Validation database: $DB_NAME"
