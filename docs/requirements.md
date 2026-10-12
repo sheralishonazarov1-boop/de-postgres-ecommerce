@@ -3,16 +3,16 @@
 ## 1. Problem Statement
 
 A small e-commerce business needs a reliable operational database for storing
-and managing information anout customers, addresses, products, categories,
+and managing information about customers, addresses, products, categories,
 orders, order items, and payments.
 
-The database must preserve relationship between business entities, protect
+The database must preserve relationships between business entities, protect
 data integrity, and support the basic operations required by an e-commerce
-application. 
+application.
 
 The primary goal of this project is to design and implement a relational
 PostgreSQL database that correctly represents the business domain and 
-provides a strong foundation for the future data engineering work.
+provides a strong foundation for future data engineering work.
 
 ---
 
@@ -22,7 +22,7 @@ The project should provide:
 
 * A correctly designed relational database.
 * Clear relationships between business entities.
-* Strong data integritty through appropriate keys and constraints.
+* Strong data integrity through appropriate keys and constraints.
 * Support for transactional operations.
 * A maintainable and understandable schema.
 * A foundation that can later act as an OLTP source for data engineering
@@ -88,7 +88,7 @@ A customer must be able to have one or more addresses.
 ### FR-03 - Product Management
 
 The system must store product information including product identification
-and oricing information.
+and current pricing information.
 
 ### FR-04 - Categories
 
@@ -101,8 +101,11 @@ A customer must be able to place orders.
 
 ### FR-06 - Order Items
 
-An order must contain one or more order items.
+An order must contain one or more order items before checkout.
 Each order item represents a product included in an order.
+
+The current schema allows an order to be created before its items are added;
+the minimum-one-item checkout rule is not enforced by a database constraint.
 
 ### FR-07 - Historical Order Pricing
 
@@ -122,14 +125,19 @@ For example, an order must not reference a customer that does not exist.
 
 ### FR-10 - Transactional Operations
 
-Operations that modify multiple related records must be capable of being 
+Operations that modify multiple related records must be capable of being
 executed atomically.
 For example, creating an order and its order items should not leave the
 database in a partially completed state.
 
+### FR-11 - Order Status
+
+Orders must use one of the supported statuses: `pending`, `paid`, `shipped`,
+or `cancelled`.
+
 ---
 
-## 5. Non-Functional Reuirenments
+## 5. Non-Functional Requirements
 
 ### NFR-01 — Data Integrity
 

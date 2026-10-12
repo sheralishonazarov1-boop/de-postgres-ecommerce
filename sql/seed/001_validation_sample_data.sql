@@ -28,6 +28,28 @@ VALUES
         TIMESTAMPTZ '2026-01-10 10:00:00+00'
     );
 
+INSERT INTO addresses (
+    customer_id,
+    address_type,
+    street,
+    city,
+    country
+)
+SELECT
+    c.customer_id,
+    v.address_type,
+    v.street,
+    v.city,
+    v.country
+FROM (
+    VALUES
+        ('ada@example.test', 'shipping', '12 Analytical Engine Way', 'London', 'United Kingdom'),
+        ('grace@example.test', 'shipping', '32 Compiler Lane', 'New York', 'United States'),
+        ('lin@example.test', 'billing', '8 Relational Road', 'Singapore', 'Singapore')
+) AS v(email, address_type, street, city, country)
+JOIN customers AS c
+    ON c.email = v.email;
+
 -- Three products: Monitor will have no order items.
 INSERT INTO products (
     sku,
@@ -68,7 +90,7 @@ WHERE
     (p.sku = 'MN-001'
         AND c.name = 'Displays');
 
--- Three orders, all with a valid pending status.
+-- Ada's orders are paid; Grace's order remains pending.
 INSERT INTO orders (
     customer_id,
     status,
@@ -76,23 +98,26 @@ INSERT INTO orders (
 )
 SELECT
     c.customer_id,
-    'pending',
+    v.order_status,
     v.order_time
 FROM (
     VALUES
         (
             'ada@example.test',
+            'paid',
             TIMESTAMPTZ '2026-01-10 10:00:00+00'
         ),
         (
             'ada@example.test',
+            'paid',
             TIMESTAMPTZ '2026-01-11 10:00:00+00'
         ),
         (
             'grace@example.test',
+            'pending',
             TIMESTAMPTZ '2026-01-12 10:00:00+00'
         )
-) AS v(customer_email, order_time)
+) AS v(customer_email, order_status, order_time)
 JOIN customers AS c
     ON c.email = v.customer_email;
 
@@ -152,6 +177,47 @@ JOIN orders AS o
    AND o.created_at = v.order_time
 JOIN products AS p
     ON p.sku = v.sku;
+
+-- Ada's January 10 order is paid in two separate captured records.
+INSERT INTO payments (
+    order_id,
+    amount,
+    status,
+    payment_method,
+    created_at
+)
+SELECT
+    o.order_id,
+    v.amount,
+    'captured',
+    'card',
+    v.payment_time
+FROM (
+    VALUES
+        (
+            'ada@example.test',
+            TIMESTAMPTZ '2026-01-10 10:00:00+00',
+            40.00::NUMERIC(12,2),
+            TIMESTAMPTZ '2026-01-10 10:05:00+00'
+        ),
+        (
+            'ada@example.test',
+            TIMESTAMPTZ '2026-01-10 10:00:00+00',
+            49.97::NUMERIC(12,2),
+            TIMESTAMPTZ '2026-01-10 10:06:00+00'
+        ),
+        (
+            'ada@example.test',
+            TIMESTAMPTZ '2026-01-11 10:00:00+00',
+            49.99::NUMERIC(12,2),
+            TIMESTAMPTZ '2026-01-11 10:05:00+00'
+        )
+) AS v(customer_email, order_time, amount, payment_time)
+JOIN customers AS c
+    ON c.email = v.customer_email
+JOIN orders AS o
+    ON o.customer_id = c.customer_id
+   AND o.created_at = v.order_time;
 
 COMMIT;
 

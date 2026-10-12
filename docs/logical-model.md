@@ -103,6 +103,9 @@ This relation implements the many-to-many relationship between products and cate
 | customer_id | Customer who placed the order |
 | status      | Current order status          |
 | created_at  | Order creation timestamp      |
+| cancellation_recorded_at | Timestamp recorded for cancellation |
+
+Allowed statuses: `pending`, `paid`, `shipped`, and `cancelled`.
 
 Primary Key: `order_id`
 
@@ -170,13 +173,20 @@ ProductCategory uses a composite primary key because the pair `(product_id, cate
 
 ---
 
-## 5. Nullability
+## 5. Implemented Integrity Rules
 
-Required attributes will be implemented as non-nullable where the business rules require their presence.
+The schema enforces required values, unique customer email and product SKU,
+foreign-key relationships, nonnegative prices and payment amounts, positive
+order-item quantities, and the supported order-status values.
 
-Optional attributes will remain nullable unless a stronger business rule is established.
+Foreign keys use PostgreSQL's default `NO ACTION` behavior. Deleting a customer,
+product, or order that is still referenced is therefore rejected rather than
+cascading through transaction history.
 
-Current optionality that remains intentionally unresolved will be documented before physical implementation.
+The database permits orders with no items while they are being assembled. The
+requirement to have at least one item at checkout must currently be enforced by
+the application transaction; a deferred database constraint is a possible
+future exercise.
 
 ---
 
@@ -191,17 +201,8 @@ The duplication is therefore semantic rather than accidental.
 
 ---
 
-## 7. Next Design Validation
+## 7. Open Modeling Decisions
 
-Before physical database implementation, the logical model will be checked against:
-
-* 1NF
-* 2NF
-* 3NF
-* functional dependencies
-* referential integrity
-* nullability
-* business constraints
-* indexing requirements
-
-Only after this validation will the model be translated into PostgreSQL DDL.
+Payment status and payment-method vocabularies are intentionally open text
+until their business rules are defined. The model also does not include
+inventory, shipping, refunds, or address-validation rules.

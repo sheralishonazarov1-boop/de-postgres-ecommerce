@@ -42,7 +42,7 @@ from index_lab_orders
 where customer_id = 4242;
 
 create index idx_index_lab_orders_customer_id
-ecommerce-# on index_lab_orders (customer_id);
+on index_lab_orders (customer_id);
 
 
 explain (analyze, buffers)

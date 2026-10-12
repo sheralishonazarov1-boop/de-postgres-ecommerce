@@ -83,4 +83,62 @@ WHERE table_schema = 'public'
   )
 ORDER BY table_name, ordinal_position;
 
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM customers
+        GROUP BY email
+        HAVING COUNT(*) > 1
+    ) THEN
+        RAISE EXCEPTION 'Data quality failure: duplicate customer email';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1
+        FROM products
+        GROUP BY sku
+        HAVING COUNT(*) > 1
+    ) THEN
+        RAISE EXCEPTION 'Data quality failure: duplicate product SKU';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1
+        FROM products
+        WHERE price IS NULL OR price < 0
+    ) THEN
+        RAISE EXCEPTION 'Data quality failure: invalid product price';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1
+        FROM order_items
+        WHERE quantity IS NULL OR quantity <= 0
+    ) THEN
+        RAISE EXCEPTION 'Data quality failure: invalid order quantity';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1
+        FROM payments
+        WHERE amount IS NULL OR amount < 0
+    ) THEN
+        RAISE EXCEPTION 'Data quality failure: invalid payment amount';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1
+        FROM payments AS p
+        LEFT JOIN orders AS o
+            ON o.order_id = p.order_id
+        WHERE o.order_id IS NULL
+    ) THEN
+        RAISE EXCEPTION 'Data quality failure: orphaned payment';
+    END IF;
+
+    RAISE NOTICE 'PASS: no data quality violations found';
+END
+$$;
+
 

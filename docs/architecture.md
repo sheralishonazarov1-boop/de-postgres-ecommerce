@@ -21,15 +21,13 @@ The PostgreSQL database represents the OLTP layer of the system.
 
 High-level conceptual flow:
 
-Application
-↓
-PostgreSQL OLTP Database
-↓
-Future Data Engineering Pipelines
-↓
-Future Analytical Storage / Warehouse
-↓
-Future Analytics / BI
+```mermaid
+flowchart LR
+	APP[Commerce application] --> DB[(PostgreSQL OLTP database)]
+	DB --> PIPE[Future extraction and transformation]
+	PIPE --> WH[(Future analytical warehouse)]
+	WH --> BI[Analytics and BI]
+```
 
 The analytical components are outside the scope of Project 01 and will be implemented in later projects.
 
@@ -48,7 +46,8 @@ The current domain model contains the following entities:
 * OrderItem
 * Payment
 
-The exact attributes and constraints will be determined during the database design phase.
+The implemented attributes and constraints are documented in the
+[logical data model](logical-model.md) and [initial schema](../sql/001_initial_schema.sql).
 
 ---
 
@@ -104,9 +103,10 @@ Current relationships:
 - Product N:M Category through ProductCategory
 - Order 1:N Payment
 
-Some relationship optionality rules remain subject to clarification during
-logical design because the current requirements do not explicitly define all
-minimum cardinalities.
+The schema permits zero child rows while a customer has no addresses, a
+product has no order items, or an order is still being assembled. The checkout
+requirement for at least one order item is currently enforced by application
+workflow rather than a database constraint.
 
 ---
 
@@ -114,9 +114,11 @@ minimum cardinalities.
 
 Primary database:
 
-PostgreSQL
+PostgreSQL 16+
 
-Version-specific details will be documented after the local development environment is established.
+The validation workflow runs against PostgreSQL 16. Database-specific
+behavior, such as snapshot isolation, is documented where it affects the
+learning exercises.
 
 ---
 

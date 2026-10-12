@@ -15,7 +15,7 @@ create table addresses (
     city varchar(100) not null,
     country varchar(100) not null,
 
-    constraint fk_adresses_customer
+    constraint fk_addresses_customer
         foreign key (customer_id)
         references customers(customer_id)
 );
@@ -57,6 +57,9 @@ create table orders (
     customer_id bigint not null,
     status varchar(30) not null default 'pending',
     created_at timestamptz not null default current_timestamp,
+
+    constraint chk_orders_status
+        check (status IN ('pending', 'paid', 'shipped', 'cancelled')),
 
     constraint fk_orders_customers
         foreign key (customer_id)

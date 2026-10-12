@@ -35,6 +35,60 @@ BEGIN
             'Expected 4 order items, got %', actual_count;
     END IF;
 
+    SELECT COUNT(*) INTO actual_count FROM addresses;
+
+    IF actual_count <> 3 THEN
+        RAISE EXCEPTION
+            'Expected 3 addresses, got %', actual_count;
+    END IF;
+
+    SELECT COUNT(*) INTO actual_count FROM payments;
+
+    IF actual_count <> 3 THEN
+        RAISE EXCEPTION
+            'Expected 3 payment records, got %', actual_count;
+    END IF;
+
+    IF (
+        SELECT COUNT(*)
+        FROM payments AS p
+        JOIN orders AS o
+            ON o.order_id = p.order_id
+        WHERE o.created_at = TIMESTAMPTZ '2026-01-10 10:00:00+00'
+    ) <> 2 THEN
+        RAISE EXCEPTION
+            'Expected Ada January 10 order to have two payment records';
+    END IF;
+
+    IF EXISTS (
+        WITH item_totals AS (
+            SELECT
+                order_id,
+                SUM(quantity * unit_price) AS item_total
+            FROM order_items
+            GROUP BY order_id
+        ),
+        payment_totals AS (
+            SELECT
+                order_id,
+                SUM(amount) AS payment_total
+            FROM payments
+            GROUP BY order_id
+        )
+        SELECT 1
+        FROM orders AS o
+        LEFT JOIN item_totals AS i
+            ON i.order_id = o.order_id
+        LEFT JOIN payment_totals AS p
+            ON p.order_id = o.order_id
+        WHERE o.status = 'paid'
+          AND COALESCE(i.item_total, 0)
+              <> COALESCE(p.payment_total, 0)
+    ) THEN
+        RAISE EXCEPTION
+            'Paid order item totals must match recorded payments';
+    END IF;
+
     -- Verify the total recorded order-item value.
     SELECT COALESCE(SUM(quantity * unit_price), 0)
     INTO actual_total
@@ -57,6 +111,15 @@ BEGIN
         RAISE EXCEPTION
             'Expected keyboard item value 99.98, got %',
             actual_total;
+    END IF;
+
+    SELECT COALESCE(SUM(amount), 0)
+    INTO actual_total
+    FROM payments;
+
+    IF actual_total <> 139.96 THEN
+        RAISE EXCEPTION
+            'Expected captured payment total 139.96, got %', actual_total;
     END IF;
 
     -- Verify the customer without orders is still present.
@@ -90,6 +153,27 @@ BEGIN
     ) IS NULL THEN
         RAISE EXCEPTION
             'Expected customer/order-time index is missing';
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conrelid = 'public.orders'::regclass
+          AND conname = 'chk_orders_status'
+    ) THEN
+        RAISE EXCEPTION
+            'Expected order status constraint is missing';
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM transaction_lab_accounts
+        HAVING SUM(balance) = 2000.00
+           AND MIN(balance) = 900.00
+           AND MAX(balance) = 1100.00
+    ) THEN
+        RAISE EXCEPTION
+            'Transaction lab did not preserve the account balances';
     END IF;
 
     RAISE NOTICE 'PASS: all validation assertions succeeded';

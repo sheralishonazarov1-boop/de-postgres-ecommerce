@@ -17,12 +17,19 @@ fi
 cd "$ROOT_DIR"
 
 # Confirm required PostgreSQL utilities exist.
-for cmd in psql createdb; do
+for cmd in psql createdb grep; do
     if ! command -v "$cmd" >/dev/null 2>&1; then
         echo "ERROR: required command not found: $cmd" >&2
         exit 1
     fi
 done
+
+# Fail before the database-existence check if the configured connection is unusable.
+if ! psql -X -d postgres -Atqc 'SELECT 1' >/dev/null 2>&1; then
+    echo "ERROR: cannot connect to the PostgreSQL database 'postgres'." >&2
+    echo "Configure PostgreSQL connection settings and credentials, then retry." >&2
+    exit 1
+fi
 
 # Refuse to overwrite an existing database.
 if psql -d postgres -Atqc \
@@ -63,6 +70,7 @@ run_sql_file "sql/tests/002_data_quality_checks.sql"
 run_sql_file "sql/queries/003_business_queries.sql"
 run_sql_file "sql/queries/004_ctes_subqueries_windows.sql"
 
+run_sql_file "sql/labs/001_transaction.sql"
 run_sql_file "sql/labs/002_indexes_and_explain.sql"
 
 run_sql_file "sql/tests/003_validation_assertions.sql"
@@ -71,5 +79,3 @@ echo
 echo "SQL files completed without a reported psql error."
 echo "Validation database: $DB_NAME"
 echo "Database retained for manual inspection."
-
-./scripts/validate.sh ecommerce_release_check
